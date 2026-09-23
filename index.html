@@ -68,8 +68,6 @@
   .verdict.bad{color:var(--bad);}
   .why{font-size:14.5px;color:#D4DAE3;}
   .why b{color:var(--ink);}
-  .discuss{margin-top:10px;font-family:'JetBrains Mono',monospace;font-size:12.5px;color:var(--amber);
-    background:rgba(255,183,77,.08);border:1px dashed rgba(255,183,77,.35);border-radius:10px;padding:9px 11px;}
 
   .btn{margin-top:16px;width:100%;border:none;border-radius:12px;padding:15px;cursor:pointer;
     font-family:'JetBrains Mono',monospace;font-weight:700;font-size:15px;letter-spacing:.3px;
@@ -124,7 +122,7 @@ const CASES = [
     ctx:"Una app nueva con pocos usuarios y crecimiento lento y estable. El equipo son 2 devs sin experiencia en sistemas distribuidos. El presupuesto es ajustado.",
     chips:[["Demanda","baja y estable"],["Presupuesto","ajustado"],["Equipo","junior"],["Crecimiento","lento"]],
     answer:"v",
-    why:"<b>Vertical.</b> Con demanda estable y un equipo sin experiencia, montar un sistema distribuido es sobre-ingeniería: agregás una complejidad que no vas a poder operar. Escalar vertical es simple, barato y más que suficiente para arrancar.",
+    why:"<b>Vertical.</b> Con demanda estable y un equipo sin experiencia, montar un sistema distribuido es sobre-ingeniería: agregás una complejidad que no vas a poder operar. Escalar vertical es simple, barato y más que suficiente para arrancar."
   },
   {
     tag:"CASO 02",
@@ -132,7 +130,7 @@ const CASES = [
     ctx:"Tienda online consolidada. 11 meses del año la demanda es normal, pero en Black Friday y Navidad se multiplica por 20 durante pocas horas. Equipo con experiencia, ya trabajan en la nube.",
     chips:[["Demanda","picos extremos y cortos"],["Equipo","maduro"],["Nube","sí"],["Presupuesto","ok"]],
     answer:"h",
-    why:"<b>Horizontal.</b> Los picos predecibles y cortos son el caso ideal de la elasticidad: sumás nodos para el pico y los apagás después (pay-as-you-go). Escalar vertical acá significaría pagar una máquina gigante ociosa los otros 11 meses.",
+    why:"<b>Horizontal.</b> Los picos predecibles y cortos son el caso ideal de la elasticidad: sumás nodos para el pico y los apagás después (pay-as-you-go). Escalar vertical acá significaría pagar una máquina gigante ociosa los otros 11 meses."
   },
   {
     tag:"CASO 03",
@@ -140,8 +138,7 @@ const CASES = [
     ctx:"Una app se viraliza de un día para el otro (como Pokémon GO). El tráfico crece sin freno y de forma impredecible, y no se puede caer justo ahora que todos la miran.",
     chips:[["Demanda","explosiva e impredecible"],["Crecimiento","sin techo"],["Tolerancia a fallos","crítica"]],
     answer:"h",
-    why:"<b>Horizontal.</b> Cuando el crecimiento no tiene techo y no podés permitirte caídas, necesitás escalabilidad casi ilimitada + tolerancia a fallos. Sumás nodos sobre la marcha y, si uno cae, los demás siguen. Es exactamente lo que salvó a Pokémon GO.",
-   
+    why:"<b>Horizontal.</b> Cuando el crecimiento no tiene techo y no podés permitirte caídas, necesitás escalabilidad casi ilimitada + tolerancia a fallos. Sumás nodos sobre la marcha y, si uno cae, los demás siguen. Es exactamente lo que salvó a Pokémon GO."
   },
   {
     tag:"CASO 04",
@@ -149,7 +146,7 @@ const CASES = [
     ctx:"Sistema interno de gestión usado por 200 empleados fijos, siempre la misma cantidad, sin crecimiento previsto. Funciona sin problemas.",
     chips:[["Demanda","fija y conocida"],["Crecimiento","nulo"],["Usuarios","200 internos"]],
     answer:"v",
-    why:"<b>Vertical.</b> Demanda fija, conocida y sin crecimiento. Montar un sistema distribuido acá es gastar complejidad y plata en un problema que no existe. La mejor arquitectura es la que el contexto necesita: no sobre-ingenierices.",
+    why:"<b>Vertical.</b> Demanda fija, conocida y sin crecimiento. Montar un sistema distribuido acá es gastar complejidad y plata en un problema que no existe. La mejor arquitectura es la que el contexto necesita: no sobre-ingenierices."
   },
   {
     tag:"CASO 05",
@@ -157,8 +154,8 @@ const CASES = [
     ctx:"Un banco tiene un core viejo y monolítico, imposible de reescribir a corto plazo, que NO se puede caer nunca. La demanda es estable. El equipo es maduro pero el sistema es rígido.",
     chips:[["Core","legacy monolítico"],["Tolerancia a fallos","cero caídas"],["Demanda","estable"],["Sistema","rígido"]],
     answer:"v",
-    why:"<b>Vertical.</b> Un monolito legacy no se distribuye fácil: reescribirlo para que sea horizontal es carísimo y riesgoso. Lo pragmático es escalar vertical y reforzarlo con redundancia. Es el caso más debatible: perfecto para discutir en voz alta antes de revelar.",
-    },
+    why:"<b>Vertical.</b> Un monolito legacy no se distribuye fácil: reescribirlo para que sea horizontal es carísimo y riesgoso. Lo pragmático es escalar vertical y reforzarlo con redundancia. Es el caso más debatible: perfecto para discutir en voz alta antes de revelar."
+  },
 ];
 
 let idx = 0, score = 0, answered = false;
@@ -208,7 +205,6 @@ function choose(btn){
   fb.innerHTML = `
     <div class="verdict ${correct?"ok":"bad"} mono">${correct?"✔ ¡Correcto! +20":"✘ La opción más sólida era: "+correctLabel}</div>
     <div class="why">${c.why}</div>
-    <div class="discuss mono">${c.discuss}</div>
     <button class="btn mono" id="next">${idx < CASES.length-1 ? "SIGUIENTE CASO →" : "VER MI RANGO →"}</button>
   `;
   fb.classList.add("show");
