@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>El Consultor de Escalabilidad</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#1B1E24; --panel:#23272F; --panel2:#2B303A; --line:#3A404C;
+    --ink:#F5F7FA; --muted:#9AA4B2;
+    --pink:#FF2E88; --green:#8BE04E; --sky:#4FC3F7; --amber:#FFB74D;
+    --ok:#57D98A; --bad:#FF6B5E;
+    box-sizing:border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  *{box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;line-height:1.5;min-height:100vh;}
+  .mono{font-family:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;}
+  .wrap{max-width:640px;margin:0 auto;padding:20px 18px 40px;}
+
+  header{margin-bottom:18px;}
+  .brand{font-family:'JetBrains Mono',monospace;font-weight:800;font-size:clamp(20px,5.5vw,26px);letter-spacing:-.5px;}
+  .brand .tag{color:var(--pink);}
+  .sub{color:var(--muted);font-size:13.5px;margin-top:4px;}
+
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:18px 0 6px;}
+  .step{font-family:'JetBrains Mono',monospace;font-size:12.5px;color:var(--muted);letter-spacing:.5px;}
+  .score{font-family:'JetBrains Mono',monospace;font-size:12.5px;color:var(--green);font-weight:700;}
+  .bar{height:6px;background:var(--panel2);border-radius:99px;overflow:hidden;margin-bottom:20px;}
+  .bar > i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--pink),var(--amber));border-radius:99px;transition:width .35s ease;}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px 18px;box-shadow:0 10px 30px rgba(0,0,0,.25);}
+  .case-tag{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--pink);font-weight:700;letter-spacing:1px;}
+  .case-title{font-size:clamp(19px,5vw,23px);font-weight:700;margin:6px 0 12px;line-height:1.25;}
+  .case-ctx{color:#D4DAE3;font-size:15px;margin-bottom:16px;}
+
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:4px;}
+  .chip{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:7px 11px;font-size:12.5px;color:#CFD6E0;}
+  .chip b{color:var(--ink);font-weight:600;}
+
+  .q{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:14px;margin:20px 0 12px;color:var(--muted);}
+  .options{display:flex;flex-direction:column;gap:10px;}
+  .opt{display:flex;align-items:center;gap:12px;width:100%;text-align:left;cursor:pointer;
+    background:var(--panel2);border:1.5px solid var(--line);border-radius:13px;padding:16px;color:var(--ink);
+    font-family:inherit;font-size:15.5px;font-weight:600;transition:transform .08s ease,border-color .15s ease,background .15s ease;}
+  .opt:hover{border-color:var(--muted);}
+  .opt:active{transform:scale(.985);}
+  .opt .ico{font-family:'JetBrains Mono',monospace;font-weight:800;font-size:18px;width:32px;height:32px;display:grid;place-items:center;border-radius:8px;flex:0 0 auto;}
+  .opt[data-k="v"] .ico{color:var(--sky);background:rgba(79,195,247,.13);}
+  .opt[data-k="h"] .ico{color:var(--green);background:rgba(139,224,78,.13);}
+  .opt .subl{display:block;font-size:12px;font-weight:500;color:var(--muted);margin-top:1px;}
+  .opt.correct{border-color:var(--ok);background:rgba(87,217,138,.10);}
+  .opt.wrong{border-color:var(--bad);background:rgba(255,107,94,.10);}
+  .opt.dim{opacity:.5;}
+  .opt:disabled{cursor:default;}
+
+  .feedback{margin-top:16px;border-radius:13px;padding:15px 16px;border:1px solid var(--line);background:var(--panel2);display:none;}
+  .feedback.show{display:block;animation:fade .25s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+  .verdict{font-family:'JetBrains Mono',monospace;font-weight:800;font-size:15px;margin-bottom:7px;}
+  .verdict.ok{color:var(--ok);}
+  .verdict.bad{color:var(--bad);}
+  .why{font-size:14.5px;color:#D4DAE3;}
+  .why b{color:var(--ink);}
+  .discuss{margin-top:10px;font-family:'JetBrains Mono',monospace;font-size:12.5px;color:var(--amber);
+    background:rgba(255,183,77,.08);border:1px dashed rgba(255,183,77,.35);border-radius:10px;padding:9px 11px;}
+
+  .btn{margin-top:16px;width:100%;border:none;border-radius:12px;padding:15px;cursor:pointer;
+    font-family:'JetBrains Mono',monospace;font-weight:700;font-size:15px;letter-spacing:.3px;
+    background:var(--pink);color:#fff;transition:filter .15s ease,transform .08s ease;}
+  .btn:hover{filter:brightness(1.08);}
+  .btn:active{transform:scale(.99);}
+  .btn.ghost{background:transparent;border:1.5px solid var(--line);color:var(--ink);}
+
+  .end{text-align:center;padding:26px 18px;}
+  .end .rank-ico{font-size:52px;line-height:1;margin-bottom:8px;}
+  .end .rank{font-family:'JetBrains Mono',monospace;font-weight:800;font-size:clamp(22px,6vw,28px);margin-bottom:6px;}
+  .end .rank.arq{color:var(--green);}
+  .end .rank.ss{color:var(--sky);}
+  .end .rank.jr{color:var(--amber);}
+  .end .bigscore{font-family:'JetBrains Mono',monospace;font-size:46px;font-weight:800;margin:10px 0 2px;}
+  .end .bigscore small{font-size:20px;color:var(--muted);font-weight:500;}
+  .end .rank-desc{color:#D4DAE3;font-size:15px;max-width:430px;margin:8px auto 0;}
+  .hidden{display:none;}
+  footer{margin-top:22px;text-align:center;color:var(--muted);font-size:11.5px;font-family:'JetBrains Mono',monospace;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand mono"><span class="tag">&lt;/</span>El Consultor de Escalabilidad</div>
+    <div class="sub">Decidí cómo escalar cada sistema. No hay una respuesta “siempre correcta”: depende del contexto.</div>
+  </header>
+
+  <div id="game">
+    <div class="topbar">
+      <span class="step mono" id="step">CASO 1 / 5</span>
+      <span class="score mono" id="score">0 pts</span>
+    </div>
+    <div class="bar"><i id="progress"></i></div>
+    <div class="card" id="card"></div>
+  </div>
+
+  <div id="endscreen" class="hidden"></div>
+  <footer>PPS II · Sistemas Operativos Distribuidos · Escalabilidad vertical vs. horizontal</footer>
+</div>
+
+<script>
+const OPTS = [
+  {k:"v", ico:"↑", label:"Vertical", sub:"scale up · agrandar una máquina"},
+  {k:"h", ico:"→", label:"Horizontal", sub:"scale out · sumar más máquinas"},
+];
+
+const CASES = [
+  {
+    tag:"CASO 01",
+    title:"La startup que recién arranca",
+    ctx:"Una app nueva con pocos usuarios y crecimiento lento y estable. El equipo son 2 devs sin experiencia en sistemas distribuidos. El presupuesto es ajustado.",
+    chips:[["Demanda","baja y estable"],["Presupuesto","ajustado"],["Equipo","junior"],["Crecimiento","lento"]],
+    answer:"v",
+    why:"<b>Vertical.</b> Con demanda estable y un equipo sin experiencia, montar un sistema distribuido es sobre-ingeniería: agregás una complejidad que no vas a poder operar. Escalar vertical es simple, barato y más que suficiente para arrancar.",
+    discuss:"Puesta en común: ¿por qué “lo más moderno” (horizontal) no siempre es lo mejor?"
+  },
+  {
+    tag:"CASO 02",
+    title:"El e-commerce en Black Friday",
+    ctx:"Tienda online consolidada. 11 meses del año la demanda es normal, pero en Black Friday y Navidad se multiplica por 20 durante pocas horas. Equipo con experiencia, ya trabajan en la nube.",
+    chips:[["Demanda","picos extremos y cortos"],["Equipo","maduro"],["Nube","sí"],["Presupuesto","ok"]],
+    answer:"h",
+    why:"<b>Horizontal.</b> Los picos predecibles y cortos son el caso ideal de la elasticidad: sumás nodos para el pico y los apagás después (pay-as-you-go). Escalar vertical acá significaría pagar una máquina gigante ociosa los otros 11 meses.",
+    discuss:"Puesta en común: ¿qué costo tendría escalar vertical para un pico de pocas horas?"
+  },
+  {
+    tag:"CASO 03",
+    title:"El éxito inesperado",
+    ctx:"Una app se viraliza de un día para el otro (como Pokémon GO). El tráfico crece sin freno y de forma impredecible, y no se puede caer justo ahora que todos la miran.",
+    chips:[["Demanda","explosiva e impredecible"],["Crecimiento","sin techo"],["Tolerancia a fallos","crítica"]],
+    answer:"h",
+    why:"<b>Horizontal.</b> Cuando el crecimiento no tiene techo y no podés permitirte caídas, necesitás escalabilidad casi ilimitada + tolerancia a fallos. Sumás nodos sobre la marcha y, si uno cae, los demás siguen. Es exactamente lo que salvó a Pokémon GO.",
+    discuss:"Puesta en común: reconectar con el caso real de Pokémon GO de la charla."
+  },
+  {
+    tag:"CASO 04",
+    title:"La app interna de la empresa",
+    ctx:"Sistema interno de gestión usado por 200 empleados fijos, siempre la misma cantidad, sin crecimiento previsto. Funciona sin problemas.",
+    chips:[["Demanda","fija y conocida"],["Crecimiento","nulo"],["Usuarios","200 internos"]],
+    answer:"v",
+    why:"<b>Vertical.</b> Demanda fija, conocida y sin crecimiento. Montar un sistema distribuido acá es gastar complejidad y plata en un problema que no existe. La mejor arquitectura es la que el contexto necesita: no sobre-ingenierices.",
+    discuss:"Puesta en común: ¿cuándo NO conviene distribuir? El “no sobre-ingenierizar”."
+  },
+  {
+    tag:"CASO 05",
+    title:"El banco con sistema legacy",
+    ctx:"Un banco tiene un core viejo y monolítico, imposible de reescribir a corto plazo, que NO se puede caer nunca. La demanda es estable. El equipo es maduro pero el sistema es rígido.",
+    chips:[["Core","legacy monolítico"],["Tolerancia a fallos","cero caídas"],["Demanda","estable"],["Sistema","rígido"]],
+    answer:"v",
+    why:"<b>Vertical.</b> Un monolito legacy no se distribuye fácil: reescribirlo para que sea horizontal es carísimo y riesgoso. Lo pragmático es escalar vertical y reforzarlo con redundancia. Es el caso más debatible: perfecto para discutir en voz alta antes de revelar.",
+    discuss:"Puesta en común (¡el caso estrella!): pedí que defiendan su voto ANTES de revelar. En la vida real esto sería híbrido, pero con lo visto, la respuesta pragmática es vertical."
+  },
+];
+
+let idx = 0, score = 0, answered = false;
+const $ = s => document.querySelector(s);
+const card = $("#card");
+
+function render(){
+  answered = false;
+  const c = CASES[idx];
+  $("#step").textContent = `CASO ${idx+1} / ${CASES.length}`;
+  $("#score").textContent = `${score} pts`;
+  $("#progress").style.width = `${(idx/CASES.length)*100}%`;
+  card.innerHTML = `
+    <div class="case-tag mono">${c.tag}</div>
+    <div class="case-title">${c.title}</div>
+    <div class="case-ctx">${c.ctx}</div>
+    <div class="chips">${c.chips.map(ch=>`<span class="chip"><b>${ch[0]}:</b> ${ch[1]}</span>`).join("")}</div>
+    <div class="q mono">// ¿Cómo escalarías este sistema?</div>
+    <div class="options" id="options">
+      ${OPTS.map(o=>`
+        <button class="opt" data-k="${o.k}">
+          <span class="ico">${o.ico}</span>
+          <span>${o.label}<span class="subl">${o.sub}</span></span>
+        </button>`).join("")}
+    </div>
+    <div class="feedback" id="feedback"></div>
+  `;
+  document.querySelectorAll(".opt").forEach(b=>b.addEventListener("click",()=>choose(b)));
+}
+
+function choose(btn){
+  if(answered) return;
+  answered = true;
+  const c = CASES[idx];
+  const pick = btn.dataset.k;
+  const correct = pick === c.answer;
+  if(correct) score += 20;
+  document.querySelectorAll(".opt").forEach(b=>{
+    b.disabled = true;
+    if(b.dataset.k === c.answer) b.classList.add("correct");
+    else if(b.dataset.k === pick) b.classList.add("wrong");
+    else b.classList.add("dim");
+  });
+  $("#score").textContent = `${score} pts`;
+  const fb = $("#feedback");
+  const correctLabel = OPTS.find(o=>o.k===c.answer).label;
+  fb.innerHTML = `
+    <div class="verdict ${correct?"ok":"bad"} mono">${correct?"✔ ¡Correcto! +20":"✘ La opción más sólida era: "+correctLabel}</div>
+    <div class="why">${c.why}</div>
+    <div class="discuss mono">${c.discuss}</div>
+    <button class="btn mono" id="next">${idx < CASES.length-1 ? "SIGUIENTE CASO →" : "VER MI RANGO →"}</button>
+  `;
+  fb.classList.add("show");
+  $("#next").addEventListener("click", next);
+  fb.scrollIntoView({behavior:"smooth", block:"nearest"});
+}
+
+function next(){
+  if(idx < CASES.length-1){ idx++; render(); window.scrollTo({top:0,behavior:"smooth"}); }
+  else showEnd();
+}
+
+function showEnd(){
+  $("#game").classList.add("hidden");
+  const end = $("#endscreen");
+  end.classList.remove("hidden");
+  const correct = score/20;
+  let rank, cls, ico, desc;
+  if(correct >= 5){ rank="Arquitecto de Sistemas"; cls="arq"; ico="🏛️"; desc="Leés el contexto como un maestro. Entendiste que ninguna arquitectura gana siempre: la mejor es la que el problema necesita."; }
+  else if(correct >= 3){ rank="Consultor Semi Senior"; cls="ss"; ico="🧭"; desc="Buen ojo para los trade-offs. Ya distinguís cuándo conviene simplicidad y cuándo resiliencia. Te falta poco para arquitecto."; }
+  else { rank="Consultor Junior"; cls="jr"; ico="🌱"; desc="Buen arranque. La clave: no hay respuesta universal. Fijate cómo el contexto (demanda, equipo, costo) manda sobre la tecnología."; }
+  end.innerHTML = `
+    <div class="card end">
+      <div class="rank-ico">${ico}</div>
+      <div class="rank ${cls} mono">${rank}</div>
+      <div class="bigscore mono">${score}<small> / 100</small></div>
+      <div class="rank-desc">${desc}</div>
+      <button class="btn ghost mono" id="again">↻ JUGAR DE NUEVO</button>
+    </div>
+  `;
+  $("#again").addEventListener("click",()=>{
+    idx=0;score=0;end.classList.add("hidden");$("#game").classList.remove("hidden");render();window.scrollTo({top:0});
+  });
+}
+
+render();
+</script>
+</body>
+</html>
